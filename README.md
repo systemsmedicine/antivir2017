@@ -1,6 +1,12 @@
 # antivir2017
 Supplemental simulation code for the paper [link to bioarix] 
 
+# Python code for evaluating neuraminidase inhibitor dynamics
+
+[Link to Python Notebook???]
+
+# R code for epidemic simulations
+
 ## Default settings 
 
 Model
