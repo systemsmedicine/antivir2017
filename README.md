@@ -9,46 +9,27 @@ Supplemental simulation code for the paper [link to bioarix]
 
 ## Default settings 
 
-Model
 ```R
-atv <- function(t, x, pars) {
-    with(as.list(c(pars, x)), {
-        n   <- 1
-        Kr  <- EC50
-        fR  <- 1/(1+(D/Kr)^n)
-
-        rightV <- ifelse(t >= 1 & V < 1, - c*V, p * fR * I - c*V)
-        
-        dT = -b * T * V
-        dJ = b * T * V - k * J
-        dI = k * J - delta * I
-        dV = rightV
-        dP = theta * I - a * P
-        dD = -g * D
-        list(c(dT,dJ,dI,dV,dP,dD))
-    })
-}
+source("./code/helpers.R")
+source("./code/ModelandParams.R")
+source("./code/genNet.R")
+source("./code/networkSim.R")
+pop <- 10^4
+```
+## Network generation
+```R
+# -------------------------------------------------------------------------
+# (not run), run once and load from RData instead
+# -------------------------------------------------------------------------
+# M <- genNet(10000, 123, nAllunique, pAll)
+M = readRDS("./data/M.Rds")
+hist(degree(M$g), breaks=50, main="Network degree distribution", xlab="Number of contact", col="slategrey", sub="POLYMOD data (Mossong et al. (2008) Plos Med)")
+# savePNG("./fig/degree")
 ```
 
+![](./fig/degree.png)
 
-Parameters
-```R
-pars <- c(b     = 0.0674, k    = 3.684, delta = 1.364,
-          p     = 40356,  EC50 = 42.3,  c     = 8,
-          theta = 2.75,   a    = 0.498, g     = 3.26)
-```
-
-## Network model's properties
-
-Degree distribution
-
-```R
-hist(degree(dget("M")$g), breaks=50, main="Network degree distribution", xlab="Number of contact", col="slategrey", sub="POLYMOD data (Mossong et al. (2008) Plos Med)")
-```
-
- ![](./fig/degree.png)
-
-## Parallel without cluster computer
+## Parallel without cluster version
 
 ```R
 runcon <- function(namex="control", pvaci=0, ssize=1:1000) {
@@ -61,23 +42,20 @@ runcon <- function(namex="control", pvaci=0, ssize=1:1000) {
   system.time(mclapply(ssize, loopF, mc.cores=ncores))
 }
 ```
-
-## Simulation scenarios
+## Scenarios
 
 ```R
+# -------------------------------------------------------------------------
+# Long computation process
+# -------------------------------------------------------------------------
 # Control no vaccination --------------------------------------------------
   runcon()
-# 5 days regimen ----------------------------------------------------------
-  # Generating D dynamics
-  x1  <- c(D = 0); .t  <- seq(0, 365, .01)
-  o1  <- ode(x1, .t, drug, pars, events=list(data=ij(0, .5, 5, 150)))
-  # Put into a light form, changes for every scenario
-  fD  <- approxfun(o1[, "time"], o1[, "D"], rule=2)
 # 1 weeks .9 coverage -----------------------------------------------------
+  totalDrug <- 7*300*.9*10000
   # Generating D dynamics
   x1  <- c(D = 0); .t  <- seq(0, 365, .01)
-  totalDrug <- 7*300*.9*10000
   o1  <- ode(x1, .t, drug, pars, events=list(data=ij(0, .5, 7, 150)))
+  # Put into a light form, change for every scenario
   fD  <- approxfun(o1[, "time"], o1[, "D"], rule=2)
   runcon("1week90", 0.9)
 # 2 weeks .45 coverage ----------------------------------------------------
