@@ -67,3 +67,6 @@ x0 <- c(T = 1, J = 0, I = 0, V = 7.5e-6, P = 0, D = 0)
 o <- ode(x0, .t, atv, pars)
 fNorm <- approxfun(.t, o[, "V"], rule=2)
 # plot(o)
+
+# Epidemic, no drug state
+xe <- x0[-6]

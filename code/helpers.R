@@ -7,6 +7,7 @@ sapply(libs, library, character.only=TRUE)
 par(pch=20, lwd=1.2, font.main=1, bty="n")
 solarized <- c("#002b36", "#dc322f", "#b58900", "#268bd2", "#859900", "#6c71c4", "#d33682", "#2aa198")
 palette(solarized)
+source("kiolin.R")
 # Treatment regimen generation
 # -------------------------------------------------------------------------
 ij <- function(t0=0, freq=1, duration=5, x=75, name="D") {
@@ -69,4 +70,14 @@ process <- function(folder="./control", full=TRUE) {
     R0net(out, All=full)
   })
   return(R0)
+}
+
+# Getting episize
+processIC <- function(folder="./control") {
+  # Getting infected and recovery dynamics
+  IC <- lapply(seq_along(list.files(folder)), function(x) {
+    out <- dget(paste0(folder,"/", list.files(folder)[x]))
+    max(cumsum(out$SIR$In)-100)
+  })
+  return(IC)
 }
